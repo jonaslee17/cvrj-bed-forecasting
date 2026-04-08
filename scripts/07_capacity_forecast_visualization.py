@@ -165,7 +165,7 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
     if draw_forecast_marker:
         ax.axvline(x=x_forecast, color='gray', linestyle='--', linewidth=1.5, zorder=0)
         ymin, ymax = ax.get_ylim()
-        ax.axvspan(x_forecast, all_years[-1], alpha=0.18, color='gray', zorder=0)
+        ax.axvspan(x_forecast, all_years[-1], alpha=0.12, color='gray', zorder=0)
         ax.set_ylim(ymin, ymax)
         # Place the \"Historical\" / \"Forecast\" labels well away from the capacity line
         # so they don't overlap the red 660-bed line.
