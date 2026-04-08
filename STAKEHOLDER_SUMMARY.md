@@ -92,12 +92,36 @@ Your two tables tell us:
 
 ---
 
-## 5. Bullet Points You Can Use When Presenting
+## 5. Daily trend vs day-to-day noise (365-day moving average)
+
+The chart **`visuals/adp_daily_and_annual.png`** shows **total daily census** (all counties in the booking file) and a **centered 365-day moving average** of that series—the same smoothing choice that minimizes squared residuals between the daily line and the smooth trend.
+
+A companion figure, **`visuals/adp_ma365_difference_residuals.png`**, shows only **difference residuals** = **daily census minus the centered 365-day moving average** (the same smoother as **`adp_daily_and_annual.png`**). These are the day-to-day swings left over after removing the annual-scale trend. Typical magnitude of these residuals is on the order of **~18 inmates** RMSE for 2013–2025 on this series.
+
+**How to read it:** Large positive residuals are days when the jail was unusually full relative to the year-scale trend; large negative residuals are relatively light days. The moving average is **not** a forecast—it is a descriptive smoother for the same historical daily series as the first chart.
+
+---
+
+## 6. When does combined load cross 660 beds?
+
+Two different questions get confused if we are not careful:
+
+| Question | What to use | Approximate answer (from current model outputs) |
+|----------|-------------|--------------------------------------------------|
+| When does the **forecast combined load** (CVRJ baseline without Culpeper + **forecast** Culpeper-in-CVRJ) go **above 660**? | Annual **combined** projection in **`data/outputs/forecast_results.csv`** | **First calendar year-end above 660: 2030** (~665 projected ADP). **Linear interpolation** between year-end 2029 (~640) and 2030 (~665) places the crossing near **mid-October 2030**. |
+| When would the **smoothed daily census** (365-day MA alone) reach **660** if a simple straight-line trend continued? | OLS on the MA over a chosen historical window | A fit to **2022–2025** on the centered MA implies roughly **+24 inmates per year** on the smoothed series; extrapolating that line from **late 2025** reaches **660 around 2035**. That is **not** the same as the SARIMAX combined forecast and **ignores** the model’s projected Culpeper-in-CVRJ path. |
+
+**Better estimate for stakeholders (capacity vs the model):** Use the **forecast table**: treat **2030** as the first year the **combined projected ADP** exceeds **660**, with a **within-year** refinement of roughly **October 2030** if you interpolate linearly between December 2029 and December 2030. The residual plot explains why **eyeballing raw daily peaks** can overstate how fast the *underlying* trend is moving: after **mid-2024**, the **365-day average** of total daily census **flattened and eased** into 2025 even when individual days still spiked high.
+
+---
+
+## 7. Bullet Points You Can Use When Presenting
 
 ### What we did
 - Used **CVRJ booking data** (Book/Release dates) to compute **average daily population (ADP)** for CVRJ only and for Culpeper-in-CVRJ.
 - Built **two forecast models** (SARIMAX): one for **CVRJ-only** beds, one for **Culpeper-in-CVRJ** beds, both using **population** as the main external factor.
 - Combined the two forecasts and compared the total to **660 beds** to assess capacity if Culpeper joins.
+- Charted **daily census** with a **365-day moving average** and a follow-on **`adp_ma365_difference_residuals.png`** figure that shows **difference residuals** (daily minus that smoothed trend) only.
 
 ### How we got CVRJ ADP
 - Every booking gives a “+1” on book date and “−1” the day after release.

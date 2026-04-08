@@ -58,8 +58,12 @@ def build_combined_historical(annual_cvrj_adp, annual_culpeper_in_cvrj):
 
 def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combined_forecast,
                   annual_culpeper_in_cvrj, culpeper_forecast_vals, combined_se=None,
-                  annual_cvrj_excl47_for_combined=None, draw_forecast_marker=True, show_legend=True):
-    """Draw capacity plot: CVRJ (blue, incl. 47); Culpeper all jails (green); Combined = CVRJ excl. 47 + Culpeper (orange)."""
+                  annual_cvrj_excl47_for_combined=None, draw_forecast_marker=True, show_legend=True,
+                  combined_uncertainty='fill'):
+    """Draw capacity plot: CVRJ (blue, incl. 47); Culpeper all jails (green); Combined = CVRJ excl. 47 + Culpeper (orange).
+
+    combined_uncertainty: 'fill' = shaded band (default); 'errorbar' = vertical ±1 SE bars per year on the combined series.
+    """
     # Trim historical portion to start at 2016
     hist_years_full = annual_cvrj_adp.index
     cutoff = pd.Timestamp('2015-12-31')
@@ -121,31 +125,47 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
             markersize=5, linewidth=2,
             label='CVRJ + Culpeper (combined)')
 
-    # One-sigma band around the combined forecast (optional)
+    # One-sigma uncertainty around the combined forecast (optional): band or per-point error bars
     if combined_se is not None:
         se_trim = combined_se[years_future >= start_date]
-        se_combo_plot = [0.0] + list(se_trim)  # 0 variance at the anchor point
-        upper_bound = np.array(vals_combo_plot) + np.array(se_combo_plot)
-        lower_bound = np.array(vals_combo_plot) - np.array(se_combo_plot)
-        ax.fill_between(years_combo_plot, lower_bound, upper_bound,
-                        color='darkorange', alpha=0.15)
+        se_combo_plot = [0.0] + list(se_trim)  # 0 SE at the historical anchor point
+        if combined_uncertainty == 'fill':
+            upper_bound = np.array(vals_combo_plot) + np.array(se_combo_plot)
+            lower_bound = np.array(vals_combo_plot) - np.array(se_combo_plot)
+            ax.fill_between(years_combo_plot, lower_bound, upper_bound,
+                            color='darkorange', alpha=0.15)
+        elif combined_uncertainty == 'errorbar':
+            ax.errorbar(
+                years_combo_plot,
+                vals_combo_plot,
+                yerr=se_combo_plot,
+                fmt='none',
+                ecolor='darkorange',
+                elinewidth=1.6,
+                capsize=5,
+                capthick=1.6,
+                zorder=6,
+            )
 
     # Maximum capacity line
     ax.axhline(y=MAX_CAPACITY, color='red', linestyle='-', linewidth=2,
             label='Maximum Capacity (660 beds)')
 
-    # Label the red line directly
-    ax.text(pd.Timestamp('2035-01-01'), MAX_CAPACITY + 5,
-            'Maximum Capacity = 660',
-            color='red',
-            fontsize=FONT_ANNO,
-            ha='right',
-            va='bottom')
+    # Label the red line: left side, just below the capacity line
+    ax.text(
+        pd.Timestamp('2018-01-01'),
+        MAX_CAPACITY - 6,
+        'Maximum Capacity = 660',
+        color='red',
+        fontsize=FONT_ANNO,
+        ha='left',
+        va='top',
+    )
     # Forecast demarcation: vertical line + shaded region + arrows with labels
     if draw_forecast_marker:
         ax.axvline(x=x_forecast, color='gray', linestyle='--', linewidth=1.5, zorder=0)
         ymin, ymax = ax.get_ylim()
-        ax.axvspan(x_forecast, all_years[-1], alpha=0.08, color='gray', zorder=0)
+        ax.axvspan(x_forecast, all_years[-1], alpha=0.22, color='gray', zorder=0)
         ax.set_ylim(ymin, ymax)
         # Place the \"Historical\" / \"Forecast\" labels well away from the capacity line
         # so they don't overlap the red 660-bed line.
@@ -161,7 +181,8 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
                    xytext=(x_forecast + offset_forecast, y_arrow),
                    fontsize=20,
                    ha='left', va='center',
-                   color='black')
+                   color='black',
+                   fontweight='bold')
                    #arrowprops=dict(arrowstyle='<-', color='gray', lw=1.5))
 
         # Historical arrow (pointing left toward dashed line)
@@ -170,11 +191,12 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
                     xytext=(x_forecast - offset_historical, y_arrow),
                     fontsize=20,
                     ha='left', va='center',
-                    color='black')
+                    color='black',
+                    fontweight='bold')
                     #arrowprops=dict(arrowstyle='<-', color='gray', lw=1.5))
 
-    ax.set_xlabel('Year', fontsize=FONT_LABEL)
-    ax.set_ylabel('Average Daily Population (Beds)', fontsize=FONT_LABEL)
+    ax.set_xlabel('Year', fontsize=FONT_LABEL, fontweight='bold')
+    ax.set_ylabel('Average Daily Population (Beds)', fontsize=FONT_LABEL, fontweight='bold')
     
     # Direct labels ON the lines at the end of the forecast area (2035)
     last_year_forecast = years_future[-1]
@@ -256,6 +278,21 @@ def main():
     out1 = os.path.join(_ROOT, 'visuals', 'capacity_forecast_with_and_without_culpeper.png')
     plt.savefig(out1, dpi=150, bbox_inches='tight')
     print(f"Saved: {out1}")
+    plt.close()
+
+    # --- Figure 1b: Identical layout to Figure 1; combined ±1 SE as vertical error bars per year ---
+    fig1b, ax1b = plt.subplots(figsize=(12, 6))
+    plot_capacity(
+        ax1b, annual_cvrj_adp, years_future, cvrj_forecast_vals, combined_forecast,
+        annual_culpeper_total_adp, culpeper_forecast_vals,
+        combined_se=combined_se, annual_cvrj_excl47_for_combined=annual_cvrj_excl47,
+        draw_forecast_marker=True, show_legend=False,
+        combined_uncertainty='errorbar',
+    )
+    plt.tight_layout()
+    out1b = os.path.join(_ROOT, 'visuals', 'capacity_forecast_with_and_without_culpeper_errorbars.png')
+    plt.savefig(out1b, dpi=150, bbox_inches='tight')
+    print(f"Saved: {out1b}")
     plt.close()
 
     # --- Figure 2: Same plot + methodology text ---

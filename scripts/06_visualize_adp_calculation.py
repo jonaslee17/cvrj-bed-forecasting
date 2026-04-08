@@ -185,6 +185,73 @@ def main():
     print(f"Saved: {out_path2}")
     plt.close()
 
+    # ---- Third figure: difference residuals only (same MA as adp_daily_and_annual.png; centered 365-day) ----
+    diff_residuals = full_daily - ma365
+
+    fig3, ax_r = plt.subplots(figsize=(12, 4.5))
+    pos = diff_residuals.clip(lower=0)
+    neg = diff_residuals.clip(upper=0)
+    ax_r.fill_between(diff_residuals.index, 0, pos, color='coral', alpha=0.45, label='Above MA')
+    ax_r.fill_between(diff_residuals.index, 0, neg, color='steelblue', alpha=0.35, label='Below MA')
+    ax_r.plot(diff_residuals.index, diff_residuals.values, color='dimgray', linewidth=0.35, alpha=0.7)
+    ax_r.axhline(0, color='black', linewidth=0.9)
+    ax_r.set_ylabel('Difference residual\n(daily census − 365-day MA)', fontsize=11)
+    ax_r.set_xlabel('Date', fontsize=12)
+    ax_r.grid(True, alpha=0.45)
+    ax_r.legend(loc='upper right', fontsize=8, ncol=2)
+
+    ax_r.margins(x=0)
+    out_path3 = os.path.join(_ROOT, 'visuals', 'adp_ma365_difference_residuals.png')
+    plt.savefig(out_path3, dpi=150, bbox_inches='tight')
+    print(f"Saved: {out_path3}")
+    plt.close()
+
+    # ---- Fourth figure: histogram of residuals (same values as adp_ma365_difference_residuals.png) ----
+    resid_series = diff_residuals.dropna()
+    resid_vals = resid_series.values
+    resid_mean = float(np.mean(resid_vals))
+    resid_std = float(np.std(resid_vals, ddof=1))
+
+    fig4, ax_h = plt.subplots(figsize=(10, 5))
+    # Use one shared binning so negative (left) and positive (right) bars align.
+    bins = np.histogram_bin_edges(resid_vals, bins='auto')
+    neg_vals = resid_vals[resid_vals < 0]
+    pos_vals = resid_vals[resid_vals >= 0]
+    ax_h.hist(
+        neg_vals,
+        bins=bins,
+        color='steelblue',
+        edgecolor='white',
+        linewidth=0.6,
+        alpha=0.88,
+        label='Below MA',
+    )
+    ax_h.hist(
+        pos_vals,
+        bins=bins,
+        color='coral',
+        edgecolor='white',
+        linewidth=0.6,
+        alpha=0.88,
+        label='Above MA',
+    )
+    ax_h.axvline(resid_mean, color='darkred', linestyle='-', linewidth=2, label=f'Mean = {resid_mean:.2f}')
+    ax_h.set_xlabel('Difference residual (daily census − 365-day MA)', fontsize=15, fontweight='bold')
+    ax_h.set_ylabel('Count', fontsize=15, fontweight='bold')
+    ax_h.grid(True, axis='y', alpha=0.4)
+    stats_text = f'Mean = {resid_mean:.3f}\nSD = {resid_std:.3f}'
+    ax_h.text(
+        0.97, 0.97, stats_text,
+        transform=ax_h.transAxes, fontsize=15, va='top', ha='right',
+        bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.9),
+    )
+    ax_h.legend(loc='upper left', fontsize=12)
+    plt.tight_layout()
+    out_path4 = os.path.join(_ROOT, 'visuals', 'adp_ma365_residuals_histogram.png')
+    plt.savefig(out_path4, dpi=150, bbox_inches='tight')
+    print(f"Saved: {out_path4}")
+    plt.close()
+
     # Recommendation: which moving average is best
     print("\n--- Moving average recommendation ---")
     print("365-day: Best for capacity planning. Smooths to roughly annual level; shows the underlying")
