@@ -205,8 +205,9 @@ def main():
     print(f"Saved: {out_path3}")
     plt.close()
 
-    # ---- Fourth figure: histogram of residuals (same values as adp_ma365_difference_residuals.png) ----
+    # ---- Fourth figure: histogram of residuals (exclude 2020 — COVID skew) ----
     resid_series = diff_residuals.dropna()
+    resid_series = resid_series[resid_series.index.year != 2020]
     resid_vals = resid_series.values
     resid_mean = float(np.mean(resid_vals))
     resid_std = float(np.std(resid_vals, ddof=1))
@@ -214,6 +215,11 @@ def main():
     fig4, ax_h = plt.subplots(figsize=(10, 5))
     # Use one shared binning so negative (left) and positive (right) bars align.
     bins = np.histogram_bin_edges(resid_vals, bins='auto')
+    # If a bin spans both sides of 0, the "above MA" hist draws a coral bar across the
+    # full bin width even though only positives in that bin are counted — looks like
+    # coral left of 0. Split bins at 0 so blue/coral regions match the x-axis.
+    if bins[0] < 0 < bins[-1]:
+        bins = np.sort(np.unique(np.concatenate([bins, [0.0]])))
     neg_vals = resid_vals[resid_vals < 0]
     pos_vals = resid_vals[resid_vals >= 0]
     ax_h.hist(
@@ -238,7 +244,7 @@ def main():
     ax_h.set_xlabel('Difference residual (daily census − 365-day MA)', fontsize=16, fontweight='bold')
     ax_h.set_ylabel('Count', fontsize=16, fontweight='bold')
     ax_h.grid(True, axis='y', alpha=0.4)
-    stats_text = f'Mean = {resid_mean:.3f}\nSD = {resid_std:.3f}'
+    stats_text = f'Excludes 2020\nMean = {resid_mean:.3f}\nSD = {resid_std:.3f}'
     ax_h.text(
         0.97, 0.97, stats_text,
         transform=ax_h.transAxes, fontsize=15, va='top', ha='right',

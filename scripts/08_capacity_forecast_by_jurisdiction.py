@@ -45,6 +45,66 @@ JURISDICTIONS = [
 ]
 
 
+def plot_all_jurisdictions_only(cvrj_adp, years_future, county_series):
+    """
+    Single plot with only jurisdiction-in-CVRJ lines (historical + forecast).
+    Excludes maximum capacity, CVRJ baseline, and combined lines.
+    """
+    cutoff = pd.Timestamp("2015-12-31")
+    hist_years = cvrj_adp.index[cvrj_adp.index >= cutoff]
+    all_years = list(hist_years) + list(years_future)
+    x_forecast = pd.Timestamp("2026-01-01")
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    colors = {
+        "Fluvanna": "tab:blue",
+        "Greene": "tab:green",
+        "Louisa": "tab:orange",
+        "Madison": "tab:purple",
+        "Orange": "tab:red",
+    }
+
+    for county_name, vals in county_series.items():
+        ax.plot(
+            all_years,
+            vals,
+            "o-",
+            linewidth=1.8,
+            markersize=4,
+            color=colors.get(county_name, None),
+            label=f"{county_name}-in-CVRJ",
+        )
+
+    # Keep forecast split marker to match existing visuals.
+    ax.axvline(x_forecast, color="gray", linestyle="--", linewidth=1.2)
+    ymin, ymax = ax.get_ylim()
+    ax.axvspan(x_forecast, all_years[-1], alpha=0.18, color="gray")
+    ax.set_ylim(ymin, ymax)
+
+    ax.set_xlim(pd.Timestamp("2016-01-01"), pd.Timestamp("2036-01-01"))
+    # Add top headroom so top section labels don't overlap linework.
+    y_max_data = max(float(np.max(vals)) for vals in county_series.values())
+    ax.set_ylim(0, y_max_data + 30)
+    ax.set_xlabel("Year", fontsize=16, fontweight='bold')
+    ax.set_ylabel("Average Daily Population (Beds)", fontsize=16, fontweight='bold')
+    ax.tick_params(axis="both", labelsize=11)
+    ax.grid(True, alpha=0.5)
+    ax.legend(loc="upper right", fontsize=11)
+
+    # Add section labels at top center of each side.
+    y_text = ax.get_ylim()[1] - 8
+    ax.text(pd.Timestamp("2020-01-01"), y_text, "Historical",
+            ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
+    ax.text(pd.Timestamp("2031-01-01"), y_text, "Forecast",
+            ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
+
+    out_path = os.path.join(OUT_DIR, "capacity_forecast_all_jurisdictions_in_cvrj.png")
+    plt.tight_layout()
+    plt.savefig(out_path, dpi=150, bbox_inches="tight")
+    print(f"Saved: {out_path}")
+    plt.close()
+
+
 def compute_daily_census(df, max_year_cap=2030):
     """Event-based daily census from Book/Release dates."""
     df = df.dropna(subset=["Book Date"]).copy()
@@ -250,9 +310,28 @@ def main():
     df["Release Date"] = pd.to_datetime(df["Release Date"], errors="coerce")
     df = df[df["Book Date"].dt.year >= 2012]
 
+    county_series = {}
+    cutoff = pd.Timestamp("2015-12-31")
+    hist_years = cvrj_adp.index[cvrj_adp.index >= cutoff]
+
     for jur in JURISDICTIONS:
         plot_jurisdiction(jur, cvrj_adp, cvrj_forecast, culp_hist,
                           culp_forecast, culp_se_series, years_future, df)
+
+        # Build county-only series for the combined multi-line jurisdiction chart.
+        code = jur["code"]
+        name = jur["name"]
+        df_j = df[df["County Code"] == code].copy()
+        daily_j = compute_daily_census(df_j)
+        ann_j = daily_j.resample("YE").mean().reindex(hist_years).fillna(0.0)
+        pop_j = load_population_series(name)
+        j_forecast, _ = fit_sarimax_with_se(ann_j, pop_j, steps=len(years_future), label=f"{name} in CVRJ")
+        if j_forecast is None:
+            continue
+        county_series[name] = np.concatenate([ann_j.values, j_forecast.values])
+
+    if county_series:
+        plot_all_jurisdictions_only(cvrj_adp, years_future, county_series)
 
 
 if __name__ == "__main__":
