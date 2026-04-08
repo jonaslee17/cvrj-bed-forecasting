@@ -93,7 +93,7 @@ def plot_all_jurisdictions_only(cvrj_adp, years_future, county_series):
 
     # Add section labels at top center of each side.
     y_text = ax.get_ylim()[1] - 8
-    ax.text(pd.Timestamp("2020-01-01"), y_text, "Historical",
+    ax.text(pd.Timestamp("2021-01-01"), y_text, "Historical",
             ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
     ax.text(pd.Timestamp("2031-01-01"), y_text, "Forecast",
             ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
@@ -274,7 +274,7 @@ def plot_jurisdiction(jur, cvrj_adp, cvrj_forecast, culp_hist_adp, culp_forecast
 
     # Historical / Forecast labels at top of plot
     y_text = MAX_CAPACITY + 35  # safely above red capacity line
-    mid_hist = pd.Timestamp("2018-01-01")
+    mid_hist = pd.Timestamp("2021-01-01")
     mid_fore = pd.Timestamp("2031-01-01")
     ax.text(mid_hist, y_text, "Historical", ha="center", va="bottom",
             fontsize=FONT_ANNO + 2, color="black")
