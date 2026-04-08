@@ -172,7 +172,7 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
         y_arrow = MAX_CAPACITY + 50  # clearly below the capacity line
 
         offset_forecast = pd.DateOffset(years=4)
-        offset_historical = pd.DateOffset(years=8)
+        offset_historical = pd.DateOffset(years=5)
 
 
         # Forecast arrow (pointing right from dashed line)
@@ -190,7 +190,7 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
                     xy=(x_forecast, y_arrow),
                     xytext=(x_forecast - offset_historical, y_arrow),
                     fontsize=20,
-                    ha='left', va='center',
+                    ha='center', va='center',
                     color='black',
                     fontweight='bold')
                     #arrowprops=dict(arrowstyle='<-', color='gray', lw=1.5))
