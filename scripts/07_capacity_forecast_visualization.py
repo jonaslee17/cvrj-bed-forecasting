@@ -21,7 +21,7 @@ FORECAST_RESULTS_CSV = os.path.join(_ROOT, "data", "outputs", "forecast_results.
 CULPEPER_IN_CVRJ_CSV = os.path.join(_ROOT, "data", "outputs", "forecast_annual_culpeper_in_cvrj.csv")
 FORECAST_START_YEAR = 2026
 FONT_TITLE = 18
-FONT_LABEL = 15
+FONT_LABEL = 17
 FONT_LEGEND = 12
 FONT_ANNO = 14
 
@@ -165,7 +165,7 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
     if draw_forecast_marker:
         ax.axvline(x=x_forecast, color='gray', linestyle='--', linewidth=1.5, zorder=0)
         ymin, ymax = ax.get_ylim()
-        ax.axvspan(x_forecast, all_years[-1], alpha=0.22, color='gray', zorder=0)
+        ax.axvspan(x_forecast, all_years[-1], alpha=0.18, color='gray', zorder=0)
         ax.set_ylim(ymin, ymax)
         # Place the \"Historical\" / \"Forecast\" labels well away from the capacity line
         # so they don't overlap the red 660-bed line.

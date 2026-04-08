@@ -85,7 +85,7 @@ def main():
     daily_culp, annual_adp_culp = compute_daily_census_and_adp(df_culpeper, 2030)
     print("Computing daily census (all counties incl. County 47) for adp_daily_and_annual figure...")
     daily_census_all, _ = compute_daily_census_and_adp(df, 2030)
-
+    
     # Hardcoded Culpeper ADP used in run_forecast.py (for comparison)
     culpeper_hardcoded = {
         '2020': 148.93, '2021': 185.75, '2022': 210.82,
@@ -169,9 +169,8 @@ def main():
     #ax.plot(ma90.index, ma90.values, color='darkorange', linewidth=1.5, label='90-day moving average')
     #ax.plot(ma30.index, ma30.values, color='purple', linewidth=1.2, label='30-day moving average')
 
-    ax.set_xlabel('Date', fontsize = 14)
-    ax.set_ylabel('Daily census (count)', fontsize = 14)
-    ax.set_title('Daily Census and Moving Average', fontsize = 20)
+    ax.set_xlabel('Date', fontsize=16, fontweight='bold')
+    ax.set_ylabel('Daily census (count)', fontsize=16, fontweight='bold')
     ax.legend(loc='lower right', fontsize=11)
     ax.set_ylim(0, None)
     ax.grid(True, alpha=0.5)
@@ -195,8 +194,8 @@ def main():
     ax_r.fill_between(diff_residuals.index, 0, neg, color='steelblue', alpha=0.35, label='Below MA')
     ax_r.plot(diff_residuals.index, diff_residuals.values, color='dimgray', linewidth=0.35, alpha=0.7)
     ax_r.axhline(0, color='black', linewidth=0.9)
-    ax_r.set_ylabel('Difference residual\n(daily census − 365-day MA)', fontsize=11)
-    ax_r.set_xlabel('Date', fontsize=12)
+    ax_r.set_ylabel('Difference residual\n(daily census − 365-day MA)', fontsize=16, fontweight='bold')
+    ax_r.set_xlabel('Date', fontsize=16, fontweight='bold')
     ax_r.grid(True, alpha=0.45)
     ax_r.legend(loc='upper right', fontsize=8, ncol=2)
 
@@ -236,8 +235,8 @@ def main():
         label='Above MA',
     )
     ax_h.axvline(resid_mean, color='darkred', linestyle='-', linewidth=2, label=f'Mean = {resid_mean:.2f}')
-    ax_h.set_xlabel('Difference residual (daily census − 365-day MA)', fontsize=15, fontweight='bold')
-    ax_h.set_ylabel('Count', fontsize=15, fontweight='bold')
+    ax_h.set_xlabel('Difference residual (daily census − 365-day MA)', fontsize=16, fontweight='bold')
+    ax_h.set_ylabel('Count', fontsize=16, fontweight='bold')
     ax_h.grid(True, axis='y', alpha=0.4)
     stats_text = f'Mean = {resid_mean:.3f}\nSD = {resid_std:.3f}'
     ax_h.text(
