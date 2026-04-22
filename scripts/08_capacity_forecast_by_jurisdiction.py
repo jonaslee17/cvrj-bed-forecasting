@@ -78,7 +78,7 @@ def plot_all_jurisdictions_only(cvrj_adp, years_future, county_series):
     # Keep forecast split marker to match existing visuals.
     ax.axvline(x_forecast, color="gray", linestyle="--", linewidth=1.2)
     ymin, ymax = ax.get_ylim()
-    ax.axvspan(x_forecast, all_years[-1], alpha=0.18, color="gray")
+    ax.axvspan(x_forecast, all_years[-1], alpha=0.12, color="gray")
     ax.set_ylim(ymin, ymax)
 
     ax.set_xlim(pd.Timestamp("2016-01-01"), pd.Timestamp("2036-01-01"))
@@ -93,7 +93,7 @@ def plot_all_jurisdictions_only(cvrj_adp, years_future, county_series):
 
     # Add section labels at top center of each side.
     y_text = ax.get_ylim()[1] - 8
-    ax.text(pd.Timestamp("2020-01-01"), y_text, "Historical",
+    ax.text(pd.Timestamp("2021-01-01"), y_text, "Historical",
             ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
     ax.text(pd.Timestamp("2031-01-01"), y_text, "Forecast",
             ha="center", va="top", fontsize=FONT_ANNO + 6, fontweight="bold", color="black")
@@ -172,7 +172,7 @@ def plot_jurisdiction(jur, cvrj_adp, cvrj_forecast, culp_hist_adp, culp_forecast
     # Historical J-in-CVRJ annual ADP
     df_j = df_cvrj[df_cvrj["County Code"] == code].copy()
     daily_j = compute_daily_census(df_j)
-    ann_j = daily_j.resample("YE").mean()
+    ann_j = daily_j.resample("Y").mean()
 
     pop_j = load_population_series(name)
     j_forecast, j_se = fit_sarimax_with_se(ann_j, pop_j, steps=len(years_future), label=f"{name} in CVRJ")
@@ -274,7 +274,7 @@ def plot_jurisdiction(jur, cvrj_adp, cvrj_forecast, culp_hist_adp, culp_forecast
 
     # Historical / Forecast labels at top of plot
     y_text = MAX_CAPACITY + 35  # safely above red capacity line
-    mid_hist = pd.Timestamp("2018-01-01")
+    mid_hist = pd.Timestamp("2021-01-01")
     mid_fore = pd.Timestamp("2031-01-01")
     ax.text(mid_hist, y_text, "Historical", ha="center", va="bottom",
             fontsize=FONT_ANNO + 2, color="black")
@@ -323,7 +323,7 @@ def main():
         name = jur["name"]
         df_j = df[df["County Code"] == code].copy()
         daily_j = compute_daily_census(df_j)
-        ann_j = daily_j.resample("YE").mean().reindex(hist_years).fillna(0.0)
+        ann_j = daily_j.resample("Y").mean().reindex(hist_years).fillna(0.0)
         pop_j = load_population_series(name)
         j_forecast, _ = fit_sarimax_with_se(ann_j, pop_j, steps=len(years_future), label=f"{name} in CVRJ")
         if j_forecast is None:
