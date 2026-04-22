@@ -204,7 +204,7 @@ def plot_capacity(ax, annual_cvrj_adp, years_future, cvrj_forecast_vals, combine
     # 1. Orange Combined Line (Above)
     last_val_combo = vals_combo_plot[-1]
     ax.text(last_year_forecast - pd.DateOffset(months=3), last_val_combo + 15, 
-            'Combined\n(CVRJ + Culpeper)', 
+            'Combined (CVRJ + Culpeper)', 
             color='darkorange', fontsize=FONT_ANNO, fontweight='bold', 
             ha='right', va='bottom')
             

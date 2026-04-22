@@ -243,6 +243,7 @@ def main():
     ax_h.axvline(resid_mean, color='darkred', linestyle='-', linewidth=2, label=f'Mean = {resid_mean:.2f}')
     ax_h.set_xlabel('Difference residual (daily census − 365-day MA)', fontsize=16, fontweight='bold')
     ax_h.set_ylabel('Count', fontsize=16, fontweight='bold')
+    ax_h.tick_params(axis='both', which='major', labelsize=14, length=7, width=1.2)
     ax_h.grid(True, axis='y', alpha=0.4)
     stats_text = f'Excludes 2020\nMean = {resid_mean:.3f}\nSD = {resid_std:.3f}'
     ax_h.text(
